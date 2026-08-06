@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-labelledby="t d">
+  <title id="t">Topical category icon</title>
+  <desc id="d">Stylized tube and jar on a soft tinted background.</desc>
+  <rect width="400" height="400" fill="#FEF3EA" />
+  <g>
+    <path d="M160 140h50l-6 30h-38z" fill="#B34E09" opacity="0.7" />
+    <rect x="154" y="170" width="62" height="110" rx="10" fill="none" stroke="#B34E09" stroke-width="6" />
+  </g>
+  <circle cx="255" cy="230" r="40" fill="none" stroke="#00606E" stroke-width="6" opacity="0.55" />
+  <rect x="235" y="196" width="40" height="12" rx="6" fill="#00606E" opacity="0.55" />
+</svg>

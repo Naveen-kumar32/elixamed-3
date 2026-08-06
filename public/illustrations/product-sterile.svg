@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-labelledby="t d">
+  <title id="t">Sterile injectables category icon</title>
+  <desc id="d">Stylized syringe and vial on a soft tinted background.</desc>
+  <rect width="400" height="400" fill="#E9F8FA" />
+  <g stroke="#007A8A" stroke-width="6" fill="none" stroke-linecap="round">
+    <line x1="120" y1="280" x2="160" y2="240" />
+    <rect x="150" y="180" width="90" height="40" rx="6" transform="rotate(-45 150 180)" />
+    <line x1="235" y1="150" x2="255" y2="130" />
+    <line x1="215" y1="130" x2="235" y2="110" />
+  </g>
+  <rect x="250" y="230" width="46" height="70" rx="6" fill="none" stroke="#00ABC2" stroke-width="6" />
+  <rect x="258" y="216" width="30" height="18" rx="3" fill="#00ABC2" opacity="0.6" />
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-labelledby="t d">
+  <title id="t">Nutraceuticals category icon</title>
+  <desc id="d">Stylized softgel cluster on a soft tinted background.</desc>
+  <rect width="400" height="400" fill="#FEF3EA" />
+  <g transform="rotate(25 200 200)">
+    <ellipse cx="180" cy="200" rx="46" ry="26" fill="#F47920" opacity="0.8" />
+  </g>
+  <g transform="rotate(-15 200 200)">
+    <ellipse cx="240" cy="160" rx="38" ry="22" fill="#00ABC2" opacity="0.7" />
+  </g>
+  <g transform="rotate(60 200 200)">
+    <ellipse cx="235" cy="255" rx="34" ry="19" fill="#00606E" opacity="0.55" />
+  </g>
+</svg>
