@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useLocation, useNavigationType, useSearchParams } from 'react-router-dom'
 import { CompactHero } from '../components/organisms/HeroVariants'
 import { FilterBar } from '../components/organisms/FilterBar'
 import { FAQSection } from '../components/organisms/FAQSection'
@@ -334,10 +334,25 @@ export default function Products() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [rawQuery, setRawQuery] = useState('')
   const [query, setQuery] = useState('')
-  const [category, setCategory] = useState(() => {
-    const initial = searchParams.get('category')
-    return categories.some((c) => c.slug === initial) ? initial : 'all'
-  })
+  // The URL's ?category= is the single source of truth. Previously this was
+  // copied into state once on mount, so clicking a mega-menu / Home category
+  // link while already on /products changed the URL but not the grid.
+  const paramCategory = searchParams.get('category')
+  const category = categories.some((c) => c.slug === paramCategory) ? paramCategory : 'all'
+  const setCategory = useCallback(
+    (next) => {
+      setSearchParams(
+        (prev) => {
+          const params = new URLSearchParams(prev)
+          if (next === 'all') params.delete('category')
+          else params.set('category', next)
+          return params
+        },
+        { replace: true },
+      )
+    },
+    [setSearchParams],
+  )
   const [page, setPage] = useState(1)
   const [status, setStatus] = useState('loading') // loading | success | error
   const [results, setResults] = useState([])
@@ -350,16 +365,6 @@ export default function Products() {
     const t = setTimeout(() => setQuery(rawQuery), 300)
     return () => clearTimeout(t)
   }, [rawQuery])
-
-  // Keep the URL's ?category= in sync (shareable links, back-button support)
-  // without spamming history on every click. `setSearchParams` is a setter
-  // (stable by react-router convention) — deliberately excluded from deps,
-  // same reasoning as useState setters, so this only re-fires on a real
-  // category change instead of re-triggering itself via a new reference.
-  useEffect(() => {
-    setSearchParams(category === 'all' ? {} : { category }, { replace: true })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category])
 
   useEffect(() => {
     let cancelled = false
@@ -383,6 +388,25 @@ export default function Products() {
   const pageClamped = Math.min(page, totalPages)
   const pageItems = useMemo(() => results.slice((pageClamped - 1) * PAGE_SIZE, pageClamped * PAGE_SIZE), [results, pageClamped])
 
+  const location = useLocation()
+  const navigationType = useNavigationType()
+
+  const scrollToCatalogue = useCallback(() => {
+    gridRef.current?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' })
+  }, [reducedMotion])
+
+  // Arriving via a category link (mega menu, mobile drawer, Home cards) is a
+  // PUSH navigation carrying ?category= — bring the filtered grid into view
+  // so the click has a visible result instead of landing on the hero.
+  // In-page filter changes use replace, so they never trigger this.
+  useEffect(() => {
+    if (navigationType !== 'PUSH' || !paramCategory) return undefined
+    // Defer past PageTransition's scroll-to-top, which runs after this effect.
+    const t = setTimeout(scrollToCatalogue, 80)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.key])
+
   const handlePageChange = (next) => {
     setPage(next)
     gridRef.current?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' })
@@ -395,7 +419,20 @@ export default function Products() {
 
   return (
     <>
-      <CompactHero query={rawQuery} onQueryChange={setRawQuery} products={products} />
+      <CompactHero
+        query={rawQuery}
+        onQueryChange={setRawQuery}
+        products={products}
+        onSubmit={(value) => {
+          setQuery(value) // skip the debounce — results are wanted now
+          // Suggestions span every category; if the active category filter
+          // would hide the match, widen to All rather than show "No matches".
+          if (category !== 'all' && computeResults(category, value).length === 0 && computeResults('all', value).length > 0) {
+            setCategory('all')
+          }
+          scrollToCatalogue()
+        }}
+      />
 
       <section aria-label="Filter and browse products" ref={gridRef} className="scroll-mt-24 bg-brand-50/80 pb-12 pt-8 sm:pb-32">
         <div className="mx-auto max-w-7xl px-6">

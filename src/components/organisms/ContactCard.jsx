@@ -144,7 +144,7 @@ export function ContactCard() {
   const intentLabel = INTENT_OPTIONS.find((o) => o.value === values.intent)?.label ?? 'General'
 
   return (
-    <div id="contact-form" className="overflow-hidden rounded-card border border-brand-500/20 shadow-lg lg:grid lg:grid-cols-5">
+    <div id="contact-form" className="scroll-mt-24 overflow-hidden rounded-card border border-brand-500/20 shadow-lg lg:grid lg:grid-cols-5">
       {/* Info panel */}
       <div className="bg-gradient-to-br from-ink-900 via-clinical-800 to-brand-700 p-8 text-white sm:p-10 lg:col-span-2">
         <Eyebrow tone="onDark">Get in touch</Eyebrow>

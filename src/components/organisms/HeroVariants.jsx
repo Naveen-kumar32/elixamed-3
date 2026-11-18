@@ -145,7 +145,7 @@ export function EditorialHero() {
 }
 
 /** Products — split hero, catalogue framing, running-border search box. */
-export function CompactHero({ query, onQueryChange, products = [] }) {
+export function CompactHero({ query, onQueryChange, onSubmit, products = [] }) {
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
   const listboxId = useId()
@@ -161,7 +161,7 @@ export function CompactHero({ query, onQueryChange, products = [] }) {
   const selectSuggestion = (product) => {
     onQueryChange(product.name)
     setOpen(false)
-    inputRef.current?.focus()
+    onSubmit?.(product.name)
   }
 
   const onKeyDown = (e) => {
@@ -173,9 +173,13 @@ export function CompactHero({ query, onQueryChange, products = [] }) {
       e.preventDefault()
       setActiveIndex((i) => Math.max(i - 1, 0))
     } else if (e.key === 'Enter') {
+      e.preventDefault()
       if (activeIndex >= 0 && suggestions[activeIndex]) {
-        e.preventDefault()
         selectSuggestion(suggestions[activeIndex])
+      } else {
+        // Plain Enter: jump to the (already filtering) results grid.
+        setOpen(false)
+        onSubmit?.(query)
       }
     } else if (e.key === 'Escape') {
       setOpen(false)

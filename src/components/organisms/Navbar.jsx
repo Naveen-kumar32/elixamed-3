@@ -36,6 +36,10 @@ export function Navbar() {
   const closeTimer = useRef(null)
   const touchStartX = useRef(null)
 
+  // Category currently shown on /products (if any) — highlighted in menus.
+  const activeCategory =
+    location.pathname === '/products' ? new URLSearchParams(location.search).get('category') : null
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)
     onScroll()
@@ -43,10 +47,15 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  // Close menus on ANY navigation — including query-only changes such as
+  // /products?category=a → ?category=b from the mega menu, where pathname
+  // stays the same (keying on pathname alone left the menu stuck open).
   useEffect(() => {
+    clearTimeout(closeTimer.current)
     setMegaOpen(false)
     setDrawerOpen(false)
-  }, [location.pathname])
+    setDrawerProductsOpen(false)
+  }, [location.pathname, location.search])
 
   useEffect(() => {
     if (!drawerOpen) return undefined
@@ -159,7 +168,12 @@ export function Navbar() {
                                 <Link
                                   to={`/products?category=${cat.slug}`}
                                   role="menuitem"
-                                  className="-mx-3 block rounded-lg px-3 py-2 transition-colors hover:bg-brand-50"
+                                  onClick={() => closeMegaNow(false)}
+                                  aria-current={activeCategory === cat.slug ? 'page' : undefined}
+                                  className={[
+                                    '-mx-3 block rounded-lg px-3 py-2 transition-colors hover:bg-brand-50',
+                                    activeCategory === cat.slug ? 'bg-brand-50 ring-1 ring-brand-500/30' : '',
+                                  ].join(' ')}
                                 >
                                   <span className="block text-sm font-medium text-ink-700">{cat.label}</span>
                                   <span className="block text-xs text-ink-500">{cat.hint}</span>
@@ -175,6 +189,7 @@ export function Navbar() {
                           <Link
                             to={productMegaMenu.featured.href}
                             role="menuitem"
+                            onClick={() => closeMegaNow(false)}
                             className="link-underline mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-clinical-300"
                           >
                             {productMegaMenu.featured.cta}
@@ -283,7 +298,12 @@ export function Navbar() {
                         <li key={cat.slug}>
                           <Link
                             to={`/products?category=${cat.slug}`}
-                            className="block rounded-lg px-3 py-2.5 text-sm text-ink-500 hover:bg-white hover:text-brand-700"
+                            onClick={() => setDrawerOpen(false)}
+                            aria-current={activeCategory === cat.slug ? 'page' : undefined}
+                            className={[
+                              'block rounded-lg px-3 py-2.5 text-sm hover:bg-white hover:text-brand-700',
+                              activeCategory === cat.slug ? 'bg-white font-medium text-brand-700' : 'text-ink-500',
+                            ].join(' ')}
                           >
                             {cat.label}
                           </Link>
