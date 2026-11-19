@@ -12,7 +12,7 @@ import { Divider } from '../components/atoms/Divider'
 import { NoiseOverlay } from '../components/atoms/NoiseOverlay'
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion'
 import { company } from '../data/company'
-import { categories } from '../data/products'
+import { categories, products } from '../data/products'
 import { faqs } from '../data/faqs'
 
 // content-visibility:auto was tried here for below-fold sections (Part C10)
@@ -86,7 +86,7 @@ function WhatWeDoBento() {
       <Reveal>
         <Eyebrow>What we do</Eyebrow>
         <h2 className="mt-3 max-w-2xl text-display-2 font-display font-semibold text-ink-700 text-balance">
-          Five categories, one <span className="text-[1.1em] text-brand-700">verified</span> supply chain.
+          Eleven categories, one <span className="text-[1.1em] text-brand-700">verified</span> supply chain.
         </h2>
       </Reveal>
 
@@ -96,12 +96,12 @@ function WhatWeDoBento() {
           <BentoCell running>
             <Icon name="Syringe" size={28} className="text-clinical-600" />
             <p className="mt-4 font-mono text-xs uppercase tracking-wide text-ink-500/60">Flagship category</p>
-            <h3 className="mt-2 text-xl font-display font-semibold text-ink-700">Sterile Injectables</h3>
+            <h3 className="mt-2 text-xl font-display font-semibold text-ink-700">Antibiotics</h3>
             <p className="mt-2 max-w-[46ch] text-ink-500">
-              Small-volume injections and large-volume IV infusions, held and moved under validated cold-chain
-              conditions — our most temperature-sensitive category.
+              Meropenem, ceftazidime-avibactam, polymyxin B, piperacillin-tazobactam, teicoplanin and more — our
+              widest range, dispatched against verified manufacturer documentation.
             </p>
-            <Link to="/products?category=sterile-injectables" className="link-underline mt-4 inline-flex items-center gap-1.5 font-medium text-brand-700">
+            <Link to="/products?category=beta-lactams" className="link-underline mt-4 inline-flex items-center gap-1.5 font-medium text-brand-700">
               Explore the category <Icon name="ArrowRight" size={15} />
             </Link>
           </BentoCell>
@@ -125,10 +125,10 @@ function WhatWeDoBento() {
 
         <Reveal direction="scale" className="lg:col-span-4" delay={210}>
           <BentoCell>
-            <Icon name="Pill" size={24} className="text-clinical-600" />
-            <p className="mt-3 font-display text-lg font-semibold text-ink-700">Oral Solids</p>
-            <p className="mt-1 text-sm text-ink-500">Tablets & capsules</p>
-            <Link to="/products?category=oral-solids" className="link-underline mt-3 inline-block text-sm font-medium text-brand-700">
+            <Icon name="Microscope" size={24} className="text-clinical-600" />
+            <p className="mt-3 font-display text-lg font-semibold text-ink-700">Antifungals & Antivirals</p>
+            <p className="mt-1 text-sm text-ink-500">Caspofungin, micafungin, voriconazole</p>
+            <Link to="/products?category=anti-infectives" className="link-underline mt-3 inline-block text-sm font-medium text-brand-700">
               Browse →
             </Link>
           </BentoCell>
@@ -136,10 +136,10 @@ function WhatWeDoBento() {
 
         <Reveal direction="scale" className="lg:col-span-4" delay={280}>
           <BentoCell>
-            <Icon name="FlaskConical" size={24} className="text-clinical-600" />
-            <p className="mt-3 font-display text-lg font-semibold text-ink-700">Nutraceuticals</p>
-            <p className="mt-1 text-sm text-ink-500">Supplements & wellness</p>
-            <Link to="/products?category=nutraceuticals" className="link-underline mt-3 inline-block text-sm font-medium text-brand-700">
+            <Icon name="Stethoscope" size={24} className="text-clinical-600" />
+            <p className="mt-3 font-display text-lg font-semibold text-ink-700">Anaesthesia</p>
+            <p className="mt-1 text-sm text-ink-500">Sevoflurane, atracurium, cisatracurium</p>
+            <Link to="/products?category=anaesthesia" className="link-underline mt-3 inline-block text-sm font-medium text-brand-700">
               Browse →
             </Link>
           </BentoCell>
@@ -221,7 +221,7 @@ function StatsBand() {
 
 // ---- Section 6: Product categories preview -----------------------------
 function ProductCategoriesPreview() {
-  const featured = ['oral-solids', 'sterile-injectables', 'nutraceuticals'].map((slug) => categories.find((c) => c.slug === slug))
+  const featured = ['beta-lactams', 'anti-infectives', 'anticoagulants'].map((slug) => categories.find((c) => c.slug === slug))
   const directions = ['left', 'up', 'right']
 
   return (
@@ -231,7 +231,7 @@ function ProductCategoriesPreview() {
           <div>
             <Eyebrow>Catalogue</Eyebrow>
             <h2 className="mt-3 text-display-2 font-display font-semibold text-white text-balance">
-              Distributed across <span className="text-[1.1em] text-brand-100">five categories.</span>
+              Distributed across <span className="text-[1.1em] text-brand-100">eleven categories.</span>
             </h2>
           </div>
           <Link to="/products" className="link-underline hidden items-center gap-1.5 font-medium text-brand-100 sm:inline-flex">
@@ -243,9 +243,9 @@ function ProductCategoriesPreview() {
           {featured.map((cat, i) => (
             <Reveal key={cat.slug} direction={directions[i]} delay={i * 70}>
               <Card hover variant="outline" as={Link} to={`/products?category=${cat.slug}`} className="block h-full p-7">
-                <Icon name="Layers" size={26} className="text-clinical-600" />
+                <Icon name={cat.icon} size={26} className="text-clinical-600" />
                 <h3 className="mt-4 text-lg font-display font-semibold text-ink-700">{cat.label}</h3>
-                <p className="mt-1 text-sm text-ink-500">{cat.hint}</p>
+                <p className="mt-1 font-mono text-xs uppercase tracking-wide text-ink-500/60">{products.filter((p) => p.category === cat.slug).length} products</p>
                 <p className="mt-3 text-sm text-ink-500">{cat.description}</p>
               </Card>
             </Reveal>

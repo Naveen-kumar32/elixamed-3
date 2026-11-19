@@ -66,6 +66,14 @@ import {
   Handshake,
   PackageCheck,
   ThermometerSnowflake,
+  ShieldPlus,
+  Zap,
+  HeartPulse,
+  Brain,
+  Stethoscope,
+  Table2,
+  Landmark,
+  ReceiptText,
 } from 'lucide-react'
 
 // Central icon registry. Data files reference icons by name (string) so
@@ -139,6 +147,14 @@ const registry = {
   Handshake,
   PackageCheck,
   ThermometerSnowflake,
+  ShieldPlus,
+  Zap,
+  HeartPulse,
+  Brain,
+  Stethoscope,
+  Table2,
+  Landmark,
+  ReceiptText,
 }
 
 /**

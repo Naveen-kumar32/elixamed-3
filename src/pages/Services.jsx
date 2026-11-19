@@ -14,6 +14,7 @@ import { useReveal } from '../hooks/useReveal'
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion'
 import { company } from '../data/company'
 import { faqs } from '../data/faqs'
+import { categories, products } from '../data/products'
 
 // content-visibility:auto was tried here for below-fold sections (Part C10)
 // but removed: it demonstrably skipped rendering below-fold content during
@@ -21,7 +22,7 @@ import { faqs } from '../data/faqs'
 // context that renders the page without genuine incremental scrolling --
 // print/PDF export, some crawlers). Not worth the risk for a page this size.
 const BELOW_FOLD = ''
-const DONUT_COLORS = ['#F47920', '#00ABC2', '#00606E', '#C2560B', '#7DDEE8']
+const DONUT_COLORS = ['#F47920', '#00ABC2', '#00606E', '#C2560B', '#7DDEE8', '#9AA3AB']
 
 // ElixaMed is a wholesale distributor, not a manufacturer — every service
 // below is written from the distributor's side (sourcing, warehousing,
@@ -30,7 +31,7 @@ const SERVICES = [
   {
     icon: 'ShoppingCart',
     title: 'Bulk Wholesale Supply',
-    summary: 'Bulk sourcing and supply across all five categories, at wholesale pricing.',
+    summary: 'Bulk sourcing and supply across all eleven therapeutic categories, at offer pricing below MRP.',
     details: 'We hold verified stock across every category and fulfil bulk orders directly from our Chennai warehouse.',
   },
   {
@@ -68,7 +69,7 @@ const SERVICES = [
 const CAPABILITY_TABS = [
   {
     title: 'Sourcing & Verification',
-    description: 'We source across all five categories from certified manufacturers and super-stockists, verifying documentation before stock is accepted.',
+    description: 'We source across all eleven categories from certified manufacturers and super-stockists, verifying documentation before stock is accepted.',
     points: ['Manufacturer license & GMP certificate checked', 'Certificate of Analysis verified per batch', 'Grey-market and unverified supply refused'],
   },
   {
@@ -145,7 +146,7 @@ function CapabilityTabs() {
           </h2>
         </Reveal>
 
-        <div className="mt-10 grid grid-cols-1 gap-12 lg:grid-cols-12 lg:items-start lg:gap-10">
+        <div className="mt-10 grid grid-cols-1 gap-12 lg:grid-cols-12 lg:items-center lg:gap-10">
           <Reveal direction="left" className="lg:col-span-5">
             <img
               src="/images/wholesale-loading-dock.jpg"
@@ -153,13 +154,13 @@ function CapabilityTabs() {
               loading="lazy"
               width={1800}
               height={1400}
-              className="aspect-[4/5] w-full rounded-card object-cover shadow-md"
+              className="aspect-[4/3] w-full rounded-card object-cover shadow-md"
             />
           </Reveal>
 
           <Reveal direction="right" delay={100} className="lg:col-span-7">
             <Tabs>
-              <Tabs.List aria-label="Capabilities" className="flex gap-8 border-b border-ink-500/10">
+              <Tabs.List aria-label="Capabilities" className="flex flex-wrap gap-x-6 gap-y-3 border-b border-ink-500/10 sm:gap-x-8">
                 {CAPABILITY_TABS.map((tab, i) => (
                   <Tabs.Tab key={tab.title} index={i}>
                     {tab.title}
@@ -202,7 +203,7 @@ function DonutChart({ data }) {
   let cumulative = 0
 
   return (
-    <svg ref={ref} width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img" aria-label="Distribution share by category">
+    <svg ref={ref} viewBox={`0 0 ${size} ${size}`} className="h-[13.75rem] w-[13.75rem] shrink-0" role="img" aria-label="Catalogue share by category">
       <g transform={`rotate(-90 ${size / 2} ${size / 2})`}>
         <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#0B2E33" strokeOpacity="0.06" strokeWidth={stroke} />
         {data.map((d, i) => {
@@ -242,7 +243,7 @@ function BarChart({ data }) {
         <div key={d.label}>
           <div className="mb-1 flex items-center justify-between text-sm">
             <span className="font-medium text-ink-700">{d.label}</span>
-            <span className="font-mono text-ink-500/70">{d.value}%</span>
+            <span className="font-mono text-ink-500/70">{d.display}</span>
           </div>
           <div className="h-2.5 w-full overflow-hidden rounded-full bg-ink-900/[0.06]">
             <div
@@ -260,25 +261,35 @@ function BarChart({ data }) {
 }
 
 function DataVizBand() {
-  const data = company.categoryShare
+  // Derived from the live catalogue: how many products each category holds.
+  const plural = (n) => `${n} product${n === 1 ? '' : 's'}`
+  const data = categories
+    .map((c) => {
+      const count = products.filter((p) => p.category === c.slug).length
+      return { label: c.label, value: count, display: plural(count) }
+    })
+    .sort((a, b) => b.value - a.value)
+  // Donut: top five + "Other" — 11 slices would force repeated colours.
+  const rest = data.slice(5).reduce((n, d) => n + d.value, 0)
+  const donutData = rest ? [...data.slice(0, 5), { label: 'Other categories', value: rest, display: plural(rest) }] : data
   return (
-    <section aria-label="Distribution share by category" className={['bg-gradient-to-br from-brand-200 via-brand-50 to-clinical-200 py-24 sm:py-32', BELOW_FOLD].join(' ')}>
+    <section aria-label="Catalogue share by category" className={['bg-gradient-to-br from-brand-200 via-brand-50 to-clinical-200 py-24 sm:py-32', BELOW_FOLD].join(' ')}>
       <div className="mx-auto max-w-7xl px-6">
         <Reveal>
           <Eyebrow>By the numbers</Eyebrow>
           <h2 className="mt-3 text-display-2 font-display font-semibold text-ink-700 text-balance">
-            Where our <span className="text-[1.1em] text-brand-700">stock moves.</span>
+            Where our <span className="text-[1.1em] text-brand-700">range is focused.</span>
           </h2>
         </Reveal>
         <div className="mt-12 grid grid-cols-1 gap-16 lg:grid-cols-2 lg:items-center">
           <Reveal direction="left" className="flex flex-col items-center gap-8 sm:flex-row sm:justify-center lg:justify-start">
-            <DonutChart data={data} />
+            <DonutChart data={donutData} />
             <ul className="space-y-2">
-              {data.map((d, i) => (
+              {donutData.map((d, i) => (
                 <li key={d.label} className="flex items-center gap-2 text-sm">
                   <span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: DONUT_COLORS[i % DONUT_COLORS.length] }} />
                   <span className="text-ink-700">{d.label}</span>
-                  <span className="font-mono text-ink-500/60">{d.value}%</span>
+                  <span className="font-mono text-ink-500/60">{d.display}</span>
                 </li>
               ))}
             </ul>

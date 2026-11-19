@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { company } from '../../data/company'
 import { Eyebrow } from '../atoms/Eyebrow'
 import { Button } from '../atoms/Button'
@@ -84,7 +84,8 @@ export function ContactCard() {
     organisation: '',
     email: '',
     phone: '',
-    message: '',
+    // ?product= comes from a product's "Request a quote" button.
+    message: searchParams.get('product') ? `I'd like a quote for: ${searchParams.get('product')}\n\nQuantity: ` : '',
     honeypot: '',
   }))
 
@@ -160,9 +161,15 @@ export function ContactCard() {
           </li>
           <li className="flex gap-3">
             <Icon name="Phone" size={18} className="mt-0.5 shrink-0 text-clinical-300" />
-            <a href={`tel:${company.phone.href}`} className="link-underline">
-              {company.phone.display}
-            </a>
+            <span>
+              <a href={`tel:${company.phone.href}`} className="link-underline">
+                {company.phone.display}
+              </a>
+              <br />
+              <a href={`tel:${company.mobile.href}`} className="link-underline">
+                {company.mobile.display}
+              </a>
+            </span>
           </li>
           <li className="flex gap-3">
             <Icon name="Mail" size={18} className="mt-0.5 shrink-0 text-clinical-300" />
@@ -181,6 +188,14 @@ export function ContactCard() {
             </span>
           </li>
         </ul>
+        <dl className="mt-8 space-y-1 border-t border-white/15 pt-6 font-mono text-xs uppercase tracking-wide text-white/60">
+          {company.statutory.map((d) => (
+            <div key={d.label} className="flex flex-wrap gap-x-2">
+              <dt>{d.label}:</dt>
+              <dd className="text-white/85">{d.value}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
 
       {/* Form wizard */}
@@ -320,6 +335,13 @@ export function ContactCard() {
                     </Button>
                   </span>
                 </div>
+                <p className="text-xs text-ink-500/70">
+                  We use your details only to respond to this enquiry — see our{' '}
+                  <Link to="/privacy" className="link-underline text-brand-700">
+                    Privacy Policy
+                  </Link>
+                  .
+                </p>
               </div>
             )}
           </form>

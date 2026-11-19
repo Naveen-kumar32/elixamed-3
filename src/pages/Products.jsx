@@ -5,7 +5,6 @@ import { FilterBar } from '../components/organisms/FilterBar'
 import { FAQSection } from '../components/organisms/FAQSection'
 import { Reveal } from '../components/molecules/Reveal'
 import { Card } from '../components/molecules/Card'
-import { Accordion } from '../components/molecules/Accordion'
 import { Eyebrow } from '../components/atoms/Eyebrow'
 import { Badge } from '../components/atoms/Badge'
 import { Button } from '../components/atoms/Button'
@@ -13,7 +12,8 @@ import { Icon } from '../components/atoms/Icon'
 import { Skeleton } from '../components/atoms/Skeleton'
 import { NoiseOverlay } from '../components/atoms/NoiseOverlay'
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion'
-import { categories, products, comparisonAttributes, comparisonData } from '../data/products'
+import { categories, products, formatINR, categorySummary, priceListNote, orderTerms } from '../data/products'
+import { useFocusTrap } from '../hooks/useFocusTrap'
 import { faqs } from '../data/faqs'
 
 // content-visibility:auto was tried here for below-fold sections (Part C10)
@@ -22,24 +22,19 @@ import { faqs } from '../data/faqs'
 // context that renders the page without genuine incremental scrolling --
 // print/PDF export, some crawlers). Not worth the risk for a page this size.
 const BELOW_FOLD = ''
-const PAGE_SIZE = 12
+const PAGE_SIZE = 24
 
-const CATEGORY_IMAGE = {
-  'oral-solids': '/images/category-oral-solids.jpg',
-  'oral-liquids': '/images/category-oral-liquids.jpg',
-  topical: '/images/category-topical.jpg',
-  'sterile-injectables': '/images/category-sterile.jpg',
-  nutraceuticals: '/images/category-nutraceuticals.jpg',
-}
+const categoryOf = (slug) => categories.find((c) => c.slug === slug)
 
 function computeResults(category, query) {
   let list = products
   if (category !== 'all') list = list.filter((p) => p.category === category)
   if (query.trim()) {
     const q = query.trim().toLowerCase()
-    list = list.filter((p) => p.name.toLowerCase().includes(q) || p.generic.toLowerCase().includes(q))
+    list = list.filter((p) => [p.name, p.molecule, p.brand, categoryOf(p.category)?.label].some((field) => field?.toLowerCase().includes(q)))
   }
-  return [...list].sort((a, b) => a.name.localeCompare(b.name))
+  // Price-list order (S.No) — already grouped by category.
+  return [...list].sort((a, b) => a.sno - b.sno)
 }
 
 // Production-shaped async loader: no real product API exists in this
@@ -52,34 +47,233 @@ function fakeLoadProducts(category, query) {
   })
 }
 
-function ProductCard({ product }) {
-  const cat = categories.find((c) => c.slug === product.category)
+const FORM_ICON = { Tablet: 'Pill', Bottle: 'FlaskConical', Powder: 'Package', Tin: 'Package' }
+
+/** Packshot if we have one, otherwise a neutral branded tile (never a fake photo). */
+function ProductImage({ product, className = '' }) {
+  if (product.image) {
+    return (
+      <img
+        src={product.image}
+        alt={`${product.name} pack`}
+        loading="lazy"
+        width={500}
+        height={500}
+        className={['aspect-square w-full object-contain', className].join(' ')}
+      />
+    )
+  }
+  const cat = categoryOf(product.category)
+  return (
+    <div
+      role="img"
+      aria-label={`${product.name} — photo not available`}
+      className={[
+        'flex aspect-square w-full flex-col items-center justify-center gap-3 rounded-xl bg-gradient-to-br from-brand-50 via-white to-clinical-50 p-6 text-center',
+        className,
+      ].join(' ')}
+    >
+      <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-clinical-600 shadow-xs">
+        <Icon name={FORM_ICON[product.form] || cat?.icon || 'Syringe'} size={26} />
+      </span>
+      <span className="font-display text-lg font-semibold leading-tight text-ink-700">{product.name}</span>
+      <span className="font-mono text-[0.7rem] uppercase tracking-wide text-ink-500/70">
+        {product.brand} · {product.form}
+      </span>
+    </div>
+  )
+}
+
+function PriceBlock({ product, size = 'md' }) {
+  return (
+    <div>
+      <p className={['font-display font-semibold text-ink-700', size === 'lg' ? 'text-2xl text-brand-700' : 'text-lg'].join(' ')}>
+        {formatINR(product.offerPrice)}
+        <span className="ml-1 font-sans text-xs font-normal text-ink-500/70">+ GST</span>
+      </p>
+      <p className="text-xs text-ink-500/70">
+        MRP <span className="line-through">{formatINR(product.mrp)}</span>
+      </p>
+    </div>
+  )
+}
+
+function ProductCard({ product, onOpen }) {
+  const cat = categoryOf(product.category)
   return (
     <Card variant="outline" hover className="flex h-full flex-col overflow-hidden p-0">
-      <img
-        src={CATEGORY_IMAGE[product.category]}
-        alt=""
-        loading="lazy"
-        width={900}
-        height={900}
-        className="aspect-square w-full object-cover"
-      />
-      <div className="flex flex-1 flex-col p-5">
-        <Badge variant="clinical" mono>
+      <button type="button" onClick={() => onOpen(product)} aria-label={`View details for ${product.name}`} className="block bg-white p-4">
+        <ProductImage product={product} />
+      </button>
+      <div className="flex flex-1 flex-col border-t border-ink-500/10 p-5">
+        <Badge variant="clinical" mono className="self-start">
           {cat?.label}
         </Badge>
-        <h3 className="mt-3 font-display text-lg font-semibold text-ink-700">{product.name}</h3>
-        <p className="mt-1 text-sm text-ink-500">{product.generic}</p>
+        <h3 className="mt-3 font-display text-lg font-semibold leading-snug text-ink-700">{product.name}</h3>
+        <p className="mt-1 text-sm text-ink-500">{product.molecule}</p>
         <div className="mt-3 flex flex-wrap gap-1.5">
-          {product.packSizes.map((size) => (
-            <Badge key={size} variant="neutral">
-              {size}
-            </Badge>
-          ))}
+          <Badge variant="neutral">{product.form}</Badge>
+          <Badge variant="neutral">{product.brand}</Badge>
         </div>
-        <p className="mt-auto pt-3 text-xs uppercase tracking-wide text-ink-500/50">{product.form}</p>
+        <div className="mt-auto flex items-end justify-between gap-3 pt-4">
+          <PriceBlock product={product} />
+          <button
+            type="button"
+            onClick={() => onOpen(product)}
+            className="link-underline inline-flex shrink-0 items-center gap-1 text-sm font-medium text-brand-700"
+          >
+            Details <Icon name="ArrowRight" size={14} />
+          </button>
+        </div>
       </div>
     </Card>
+  )
+}
+
+/** Price-list view — mirrors the printed product list (S.No … Offer Price). */
+function PriceListTable({ items, onOpen }) {
+  return (
+    <div className="overflow-x-auto rounded-card border border-brand-500/25 bg-white shadow-md">
+      <table className="w-full min-w-[760px] border-collapse text-left text-sm">
+        <caption className="sr-only">Product price list</caption>
+        <thead>
+          <tr className="bg-brand-500 text-[#1A1F23]">
+            <th scope="col" className="px-4 py-3 font-semibold">S.No</th>
+            <th scope="col" className="px-4 py-3 font-semibold">Brand</th>
+            <th scope="col" className="px-4 py-3 font-semibold">Product</th>
+            <th scope="col" className="px-4 py-3 font-semibold">Molecule</th>
+            <th scope="col" className="px-4 py-3 font-semibold">Form</th>
+            <th scope="col" className="px-4 py-3 text-right font-semibold">MRP (₹)</th>
+            <th scope="col" className="px-4 py-3 text-right font-semibold">Offer Price (₹)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {items.map((p, i) => {
+            const prev = items[i - 1]
+            const newGroup = !prev || prev.category !== p.category
+            return [
+              newGroup && (
+                <tr key={`${p.category}-head`} className="bg-brand-50">
+                  <th scope="colgroup" colSpan={7} className="px-4 py-2.5 font-display text-base font-semibold text-brand-700">
+                    {categoryOf(p.category)?.title}
+                  </th>
+                </tr>
+              ),
+              <tr key={p.id} className="border-b border-ink-500/10 last:border-0 hover:bg-brand-50/60">
+                <td className="px-4 py-2.5 font-mono text-ink-500/70">{p.sno}</td>
+                <td className="px-4 py-2.5 text-ink-500">{p.brand}</td>
+                <th scope="row" className="px-4 py-2.5 font-medium text-ink-700">
+                  <button type="button" onClick={() => onOpen(p)} className="link-underline text-left hover:text-brand-700">
+                    {p.name}
+                  </button>
+                </th>
+                <td className="px-4 py-2.5 text-ink-500">{p.molecule}</td>
+                <td className="px-4 py-2.5 text-ink-500">{p.form}</td>
+                <td className="px-4 py-2.5 text-right font-mono text-ink-500 tabular-nums">{formatINR(p.mrp).slice(1)}</td>
+                <td className="px-4 py-2.5 text-right font-mono font-semibold text-ink-700 tabular-nums">{formatINR(p.offerPrice).slice(1)}</td>
+              </tr>,
+            ]
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+/** Product detail sheet: price-list facts + (where listed) the IndiaMART spec table. */
+function ProductDialog({ product, onClose }) {
+  const dialogRef = useRef(null)
+  const closeRef = useRef(null)
+  useFocusTrap(dialogRef, { active: !!product, onEscape: onClose })
+
+  useEffect(() => {
+    if (!product) return undefined
+    const prevOverflow = document.body.style.overflow
+    const prevFocus = document.activeElement
+    document.body.style.overflow = 'hidden'
+    closeRef.current?.focus()
+    return () => {
+      document.body.style.overflow = prevOverflow
+      prevFocus?.focus?.()
+    }
+  }, [product])
+
+  if (!product) return null
+  const cat = categoryOf(product.category)
+  const enquiryHref = `/contact?subject=products&product=${encodeURIComponent(`${product.name} (${product.molecule})`)}`
+  const rows = [
+    ['Brand', product.brand],
+    ['Molecule', product.molecule],
+    ['Form', product.form],
+    ['Category', cat?.title],
+    ...(product.moq ? [['Minimum order', product.moq]] : []),
+    ...product.specs,
+  ]
+
+  return (
+    <div className="fixed inset-0 z-[80] flex items-end justify-center sm:items-center sm:p-6">
+      <button type="button" aria-label="Close details" className="absolute inset-0 bg-ink-900/50 backdrop-blur-sm" onClick={onClose} />
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="product-dialog-title"
+        className="relative flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-t-card bg-white shadow-lg sm:rounded-card"
+      >
+        <button
+          ref={closeRef}
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-ink-700 shadow-xs hover:bg-brand-50"
+        >
+          <Icon name="X" size={20} />
+        </button>
+        <div className="grid flex-1 grid-cols-1 overflow-y-auto md:grid-cols-[2fr_3fr]">
+          <div className="flex items-start justify-center border-b border-ink-500/10 bg-white p-6 md:border-b-0 md:border-r">
+            <ProductImage product={product} className="max-w-xs md:sticky md:top-0" />
+          </div>
+          <div className="p-6 sm:p-8">
+            <Badge variant="clinical" mono>
+              {cat?.label}
+            </Badge>
+            <h2 id="product-dialog-title" className="mt-3 pr-8 font-display text-2xl font-semibold text-ink-700 text-balance">
+              {product.name}
+            </h2>
+            <p className="mt-1 text-ink-500">{product.molecule}</p>
+            <div className="mt-4">
+              <PriceBlock product={product} size="lg" />
+            </div>
+            <p className="mt-2 text-xs text-ink-500/60">{priceListNote}</p>
+
+            <table className="mt-6 w-full border-collapse text-left text-sm">
+              <caption className="sr-only">Details for {product.name}</caption>
+              <tbody>
+                {rows.map(([label, value]) => (
+                  <tr key={label} className="border-b border-ink-500/10 last:border-0">
+                    <th scope="row" className="w-2/5 py-2.5 pr-4 align-top font-normal text-ink-500">
+                      {label}
+                    </th>
+                    <td className="py-2.5 font-medium text-ink-700">{value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {product.description && <p className="mt-6 leading-relaxed text-ink-500">{product.description}</p>}
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button to={enquiryHref} icon="ArrowRight">
+                Request a quote
+              </Button>
+              <Button variant="secondary" onClick={onClose}>
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -140,56 +334,45 @@ function Pagination({ page, totalPages, onPageChange }) {
   )
 }
 
-// ---- Section 4: Category explainer band ---------------------------------
-function CategoryExplainer() {
+// ---- Section 4: Category directory --------------------------------------
+function CategoryExplainer({ onSelect }) {
   return (
     <section aria-label="Category details" className={['bg-white py-24 sm:py-32', BELOW_FOLD].join(' ')}>
       <div className="mx-auto max-w-7xl px-6">
         <Reveal>
           <Eyebrow>Categories in depth</Eyebrow>
           <h2 className="mt-3 text-display-2 font-display font-semibold text-ink-700 text-balance">
-            What each <span className="text-[1.1em] text-brand-700">category includes.</span>
+            {categories.length} therapeutic <span className="text-[1.1em] text-brand-700">categories.</span>
           </h2>
         </Reveal>
 
-        <div className="mt-14 space-y-16">
+        <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {categories.map((cat, i) => {
-            const isEven = i % 2 === 0
+            const sum = categorySummary(cat.slug)
             return (
-              <Reveal
-                key={cat.slug}
-                direction={isEven ? 'left' : 'right'}
-                className={['grid grid-cols-1 gap-10 lg:items-center lg:gap-16', isEven ? 'lg:grid-cols-[1.618fr_1fr]' : 'lg:grid-cols-[1fr_1.618fr]'].join(
-                  ' ',
-                )}
-              >
-                <div className={isEven ? 'lg:order-1' : 'lg:order-2'}>
-                  <Badge variant="clinical" mono>
-                    {cat.label}
-                  </Badge>
-                  <h3 className="mt-3 text-xl font-display font-semibold text-brand-700">{cat.hint}</h3>
-                  <p className="mt-2 max-w-[56ch] text-ink-500">{cat.description}</p>
-                  <Accordion.Item bare question="View specifications" className="mt-4 border-t border-ink-500/10">
-                    <dl className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
-                      {comparisonAttributes.map((attr) => (
-                        <div key={attr.key} className="flex justify-between gap-4 border-b border-ink-500/5 py-1.5 text-sm sm:block sm:border-0 sm:py-0">
-                          <dt className="text-ink-500/70">{attr.label}</dt>
-                          <dd className="font-medium text-ink-700">{comparisonData[cat.slug][attr.key]}</dd>
-                        </div>
-                      ))}
-                    </dl>
-                  </Accordion.Item>
-                </div>
-                <div className={isEven ? 'lg:order-2' : 'lg:order-1'}>
-                  <img
-                    src={CATEGORY_IMAGE[cat.slug]}
-                    alt={`Representative product photography for the ${cat.label} category`}
-                    loading="lazy"
-                    width={900}
-                    height={900}
-                    className="mx-auto aspect-square w-full max-w-xs rounded-card object-cover shadow-md"
-                  />
-                </div>
+              <Reveal key={cat.slug} direction="up" delay={(i % 3) * 70}>
+                <Card variant="outline" hover className="flex h-full flex-col p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-50 text-clinical-600">
+                      <Icon name={cat.icon} size={22} />
+                    </span>
+                    <span className="font-mono text-xs uppercase tracking-wide text-ink-500/60">
+                      {sum.count} product{sum.count === 1 ? '' : 's'}
+                    </span>
+                  </div>
+                  <h3 className="mt-4 font-display text-lg font-semibold text-ink-700">{cat.title}</h3>
+                  <p className="mt-2 text-sm text-ink-500">{cat.description}</p>
+                  <p className="mt-3 text-xs text-ink-500/70">
+                    Offer from {formatINR(sum.minOffer)} · {sum.forms.join(', ')}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => onSelect(cat.slug)}
+                    className="link-underline mt-auto inline-flex items-center gap-1.5 self-start pt-4 text-sm font-medium text-brand-700"
+                  >
+                    View {cat.label.toLowerCase()} <Icon name="ArrowRight" size={14} />
+                  </button>
+                </Card>
               </Reveal>
             )
           })}
@@ -199,10 +382,10 @@ function CategoryExplainer() {
   )
 }
 
-// ---- Section 5: Feature comparison table --------------------------------
+// ---- Section 5: Categories at a glance (computed from the price list) ----
 function ComparisonTable() {
   return (
-    <section aria-label="Feature comparison" className={['bg-brand-100 py-24 sm:py-32', BELOW_FOLD].join(' ')}>
+    <section aria-label="Categories at a glance" className={['bg-brand-100 py-24 sm:py-32', BELOW_FOLD].join(' ')}>
       <div className="mx-auto max-w-7xl px-6">
         <Reveal>
           <Eyebrow>Compare</Eyebrow>
@@ -215,32 +398,38 @@ function ComparisonTable() {
           <table className="w-full min-w-[720px] border-collapse text-left text-sm">
             <thead>
               <tr className="border-b-2 border-brand-500/25">
-                <th scope="col" className="sticky left-0 z-10 bg-white p-4 font-mono text-xs uppercase tracking-wide text-brand-700">
-                  Attribute
-                </th>
-                {categories.map((cat) => (
-                  <th key={cat.slug} scope="col" className="whitespace-nowrap p-4 font-medium text-ink-700">
-                    {cat.label}
+                {['Category', 'Products', 'Forms', 'Brands', 'Offer price range'].map((h, i) => (
+                  <th
+                    key={h}
+                    scope="col"
+                    className={['p-4 font-mono text-xs uppercase tracking-wide text-brand-700', i === 0 ? 'sticky left-0 z-10 bg-white' : ''].join(' ')}
+                  >
+                    {h}
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {comparisonAttributes.map((attr) => (
-                <tr key={attr.key} className="border-b border-ink-500/10 last:border-0 hover:bg-brand-50/70">
-                  <th scope="row" className="sticky left-0 z-10 bg-white p-4 font-medium text-ink-700 whitespace-nowrap">
-                    {attr.label}
-                  </th>
-                  {categories.map((cat) => (
-                    <td key={cat.slug} className="p-4 text-ink-500">
-                      {comparisonData[cat.slug][attr.key]}
+              {categories.map((cat) => {
+                const sum = categorySummary(cat.slug)
+                return (
+                  <tr key={cat.slug} className="border-b border-ink-500/10 last:border-0 hover:bg-brand-50/70">
+                    <th scope="row" className="sticky left-0 z-10 bg-white p-4 font-medium text-ink-700">
+                      {cat.label}
+                    </th>
+                    <td className="p-4 font-mono text-ink-500">{sum.count}</td>
+                    <td className="p-4 text-ink-500">{sum.forms.join(', ')}</td>
+                    <td className="p-4 text-ink-500">{sum.brands.join(', ')}</td>
+                    <td className="whitespace-nowrap p-4 font-mono text-ink-500">
+                      {sum.minOffer === sum.maxOffer ? formatINR(sum.minOffer) : `${formatINR(sum.minOffer)} – ${formatINR(sum.maxOffer)}`}
                     </td>
-                  ))}
-                </tr>
-              ))}
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </Reveal>
+        <p className="mt-4 text-xs text-ink-500/70">{priceListNote}</p>
       </div>
     </section>
   )
@@ -299,7 +488,22 @@ function ProcureSteps() {
             </Reveal>
           ))}
         </div>
-        <Reveal delay={210}>
+        <Reveal delay={210} className="mt-12 rounded-card border border-brand-500/25 bg-brand-50 p-6 sm:p-8">
+          <h3 className="flex items-center gap-2 font-display text-lg font-semibold text-ink-700">
+            <Icon name="ReceiptText" size={20} className="text-brand-600" />
+            Terms &amp; conditions
+          </h3>
+          <ol className="mt-4 list-decimal space-y-1.5 pl-5 text-sm text-ink-500 marker:font-mono marker:text-brand-700">
+            {orderTerms.map((term) => (
+              <li key={term}>{term}</li>
+            ))}
+          </ol>
+          <p className="mt-4 text-xs text-ink-500/70">{priceListNote}</p>
+          <Link to="/terms" className="link-underline mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-brand-700">
+            Read the full Terms &amp; Conditions <Icon name="ArrowRight" size={14} />
+          </Link>
+        </Reveal>
+        <Reveal delay={260}>
           <Button to="/contact?subject=products" icon="ArrowRight" className="mt-10">
             Start an enquiry
           </Button>
@@ -317,7 +521,7 @@ function RequestListCTA() {
         <Card variant="outline" className="flex flex-col items-start gap-6 p-10 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-display-3 font-display font-semibold text-ink-700 text-balance">Need the full product list?</h2>
-            <p className="mt-2 max-w-[52ch] text-ink-500">We&rsquo;ll send specifications, pack sizes and MOQs for any category.</p>
+            <p className="mt-2 max-w-[52ch] text-ink-500">We&rsquo;ll send the current price list with MRP and offer prices for all {products.length} products.</p>
           </div>
           <span className="gradient-border-run shrink-0 rounded-btn p-[3px]">
             <Button to="/contact?subject=products" icon="ArrowRight">
@@ -357,6 +561,8 @@ export default function Products() {
   const [status, setStatus] = useState('loading') // loading | success | error
   const [results, setResults] = useState([])
   const [retryToken, setRetryToken] = useState(0)
+  const [openProduct, setOpenProduct] = useState(null)
+  const [view, setView] = useState('grid') // grid | table
   const reducedMotion = usePrefersReducedMotion()
   const gridRef = useRef(null)
 
@@ -446,7 +652,31 @@ export default function Products() {
             totalCount={products.length}
           />
 
-          <div className="mt-8">
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs text-ink-500/70">{priceListNote}</p>
+            <div role="group" aria-label="Display as" className="inline-flex rounded-full border border-ink-500/15 bg-white p-1">
+              {[
+                { value: 'grid', label: 'Cards', icon: 'LayoutGrid' },
+                { value: 'table', label: 'Price list', icon: 'Table2' },
+              ].map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  aria-pressed={view === opt.value}
+                  onClick={() => setView(opt.value)}
+                  className={[
+                    'inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors',
+                    view === opt.value ? 'bg-brand-500 text-[#1A1F23]' : 'text-ink-500 hover:text-brand-700',
+                  ].join(' ')}
+                >
+                  <Icon name={opt.icon} size={15} />
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-6">
             {status === 'loading' && <GridSkeleton />}
 
             {status === 'error' && (
@@ -469,11 +699,13 @@ export default function Products() {
               </div>
             )}
 
-            {status === 'success' && results.length > 0 && (
+            {status === 'success' && results.length > 0 && view === 'table' && <PriceListTable items={results} onOpen={setOpenProduct} />}
+
+            {status === 'success' && results.length > 0 && view === 'grid' && (
               <>
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {pageItems.map((product) => (
-                    <ProductCard key={product.id} product={product} />
+                    <ProductCard key={product.id} product={product} onOpen={setOpenProduct} />
                   ))}
                 </div>
                 <Pagination page={pageClamped} totalPages={totalPages} onPageChange={handlePageChange} />
@@ -483,7 +715,12 @@ export default function Products() {
         </div>
       </section>
 
-      <CategoryExplainer />
+      <CategoryExplainer
+        onSelect={(slug) => {
+          setCategory(slug)
+          scrollToCatalogue()
+        }}
+      />
       <ComparisonTable />
       <QualityCrossLink />
       <ProcureSteps />
@@ -494,6 +731,7 @@ export default function Products() {
         className={['mx-auto max-w-7xl px-6 py-24 sm:py-32', BELOW_FOLD].join(' ')}
       />
       <RequestListCTA />
+      <ProductDialog product={openProduct} onClose={() => setOpenProduct(null)} />
     </>
   )
 }

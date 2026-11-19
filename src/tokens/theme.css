@@ -11,6 +11,11 @@
    see the "text-safe" vs "decor-only" comments before reusing a shade.
    ========================================================================== */
 @theme {
+  /* Main page container (max-w-7xl, used by every section). Widened from
+     Tailwind's 80rem so 1280–1536px screens use their width; on larger
+     screens the root font-size below scales it further. */
+  --container-7xl: 90rem;
+
   /* ---- color: brand (orange) ---- */
   --color-brand-50: #fef3ea;
   --color-brand-100: #fde3cf;
@@ -44,7 +49,7 @@
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
 
   /* ---- fluid modular scale (~1.25) ---- */
-  --text-display-1: clamp(2.75rem, 1rem + 5.4vw, 4.85rem);
+  --text-display-1: clamp(2.125rem, 1rem + 5.4vw, 4.85rem);
   --text-display-1--line-height: 1.05;
   --text-display-2: clamp(2.1rem, 0.7rem + 3.2vw, 3.45rem);
   --text-display-2--line-height: 1.15;
@@ -200,6 +205,30 @@
 
   html {
     scroll-behavior: smooth;
+    /* Fluid scaling for large monitors: 16px up to ~1700px wide, then grows
+       with the viewport (18px at 1920, 24px at 2560). Text, spacing and the
+       rem-based containers all scale together, so wide screens stay filled
+       and in proportion instead of showing a narrow column with empty sides.
+       max() keeps a user's larger browser font setting. Breakpoints are
+       unaffected (media-query rems use the browser default, not this). */
+    font-size: max(100%, 0.9375vw);
+  }
+
+  /* Reveal's left/right slide-ins start translated off-canvas; without this
+     they widened the page on phones (sideways scroll). `clip` (not `hidden`)
+     doesn't create a scroll container, so position: sticky keeps working. */
+  html,
+  body {
+    overflow-x: clip;
+  }
+
+  /* Safety net for narrow phones: a single long word in a big display
+     heading (e.g. "Pharmaceutical" at 320px) breaks instead of being cut
+     off. Only kicks in when a word cannot fit its line at all. */
+  h1,
+  h2,
+  h3 {
+    overflow-wrap: break-word;
   }
 
   body {
@@ -363,7 +392,18 @@
     clip-path: polygon(0 0, 100% 50%, 0 100%);
   }
 
-  @media (max-width: 1023px) {
+  /* Split heroes go side-by-side from 1280px (xl); below that they stack.
+     Keep hero copy clear of the teal slash + triangle drawn at the left
+     edge. The decoration lives in the first ~9rem of the section; the page
+     margin (when the viewport exceeds the 90rem container) already covers
+     part of that, so only the remainder is added as padding. */
+  @media (min-width: 1280px) {
+    .split-hero-content {
+      padding-left: max(1.5rem, calc(9.5rem - max(0px, (100vw - 90rem) / 2)));
+    }
+  }
+
+  @media (max-width: 1279px) {
     .split-hero-frame {
       background:
         linear-gradient(135deg, rgb(244 121 32 / 0.24), transparent 38%),

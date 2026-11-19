@@ -157,12 +157,12 @@ export function Navbar() {
                       aria-label="Product categories"
                       onMouseEnter={openMega}
                       onMouseLeave={closeMegaSoon}
-                      className="absolute left-1/2 top-full z-10 mt-3 w-[32rem] -translate-x-1/2 rounded-card border border-brand-500/25 bg-white p-6 shadow-lg"
+                      className="absolute left-1/2 top-full z-10 mt-3 w-[46rem] max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-card border border-brand-500/25 bg-white p-6 shadow-lg"
                     >
-                      <div className="grid grid-cols-2 gap-6">
+                      <div className="grid grid-cols-[1.7fr_1fr] gap-6">
                         <div>
                           <p className="mb-3 font-mono text-xs uppercase tracking-wide text-ink-500/60">Categories</p>
-                          <ul className="space-y-0.5">
+                          <ul className="grid grid-cols-2 gap-x-4 gap-y-0.5">
                             {productMegaMenu.categories.map((cat) => (
                               <li key={cat.slug}>
                                 <Link
@@ -181,6 +181,14 @@ export function Navbar() {
                               </li>
                             ))}
                           </ul>
+                          <Link
+                            to="/products"
+                            role="menuitem"
+                            onClick={() => closeMegaNow(false)}
+                            className="link-underline mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-brand-700"
+                          >
+                            All {productMegaMenu.total} products <Icon name="ArrowRight" size={14} />
+                          </Link>
                         </div>
                         <div className="rounded-2xl bg-gradient-to-br from-ink-900 via-clinical-800 to-brand-700 p-5 text-white">
                           <p className="font-mono text-xs uppercase tracking-wide text-clinical-300">{productMegaMenu.featured.eyebrow}</p>

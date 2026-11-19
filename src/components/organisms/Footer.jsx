@@ -80,11 +80,17 @@ export function Footer() {
                     {company.address.line2}
                   </span>
                 </li>
-                <li className="flex items-center gap-2.5">
-                  <Icon name="Phone" size={16} className="shrink-0 text-clinical-300" />
-                  <a href={`tel:${company.phone.href}`} className="link-underline hover:text-white">
-                    {company.phone.display}
-                  </a>
+                <li className="flex items-start gap-2.5">
+                  <Icon name="Phone" size={16} className="mt-0.5 shrink-0 text-clinical-300" />
+                  <span>
+                    <a href={`tel:${company.phone.href}`} className="link-underline hover:text-white">
+                      {company.phone.display}
+                    </a>
+                    <br />
+                    <a href={`tel:${company.mobile.href}`} className="link-underline hover:text-white">
+                      {company.mobile.display}
+                    </a>
+                  </span>
                 </li>
                 <li className="flex items-center gap-2.5">
                   <Icon name="Mail" size={16} className="shrink-0 text-clinical-300" />
@@ -102,11 +108,28 @@ export function Footer() {
             </div>
           </div>
 
-          <div className="mt-14 flex flex-col gap-3 border-t border-white/10 pt-8 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
-            <p>
-              © {year} {company.legalName}. All rights reserved.
-            </p>
-            <p className="font-mono uppercase tracking-wide">WHO-GMP Certified · CDSCO Licensed · USFDA Registered</p>
+          <div className="mt-14 border-t border-white/10 pt-8 text-xs text-white/50">
+            <dl className="flex flex-wrap gap-x-6 gap-y-2 font-mono uppercase tracking-wide">
+              {company.statutory.map((d) => (
+                <div key={d.label} className="flex gap-1.5">
+                  <dt>{d.label}:</dt>
+                  <dd className="text-white/75">{d.value}</dd>
+                </div>
+              ))}
+            </dl>
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p>
+                © {year} {company.legalName}. All rights reserved.
+              </p>
+              <nav aria-label="Legal" className="flex gap-5">
+                <Link to="/terms" className="link-underline hover:text-white">
+                  Terms &amp; Conditions
+                </Link>
+                <Link to="/privacy" className="link-underline hover:text-white">
+                  Privacy Policy
+                </Link>
+              </nav>
+            </div>
           </div>
         </div>
       </footer>

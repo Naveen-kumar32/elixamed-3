@@ -1,3 +1,5 @@
+import { categories, products } from './products'
+
 // Central navigation model. Order is deliberate — serial-position effect:
 // Products leads the non-Home items (best recall), Contact anchors the end
 // (terminal, action-oriented). Breadcrumbs and the command palette both
@@ -12,21 +14,19 @@ export const routes = [
   { path: '/contact', label: 'Contact', crumb: 'Contact' },
 ]
 
-// Products mega menu — categories (left column) + one featured capability
-// (right column). Category slugs must match src/data/products.js categories.
+// Products mega menu — categories (left) + one featured category (right).
+// Built from src/data/products.js so labels and counts can never drift.
+
+const countIn = (slug) => products.filter((p) => p.category === slug).length
+
 export const productMegaMenu = {
-  categories: [
-    { slug: 'oral-solids', label: 'Oral Solids', hint: 'Tablets & capsules' },
-    { slug: 'oral-liquids', label: 'Oral Liquids', hint: 'Syrups & suspensions' },
-    { slug: 'topical', label: 'Topical', hint: 'Ointments, creams & gels' },
-    { slug: 'sterile-injectables', label: 'Sterile Injectables', hint: 'IV infusions & injections' },
-    { slug: 'nutraceuticals', label: 'Nutraceuticals', hint: 'Supplements & wellness' },
-  ],
+  total: products.length,
+  categories: categories.map((c) => ({ slug: c.slug, label: c.label, hint: `${countIn(c.slug)} products` })),
   featured: {
-    eyebrow: 'Flagship category',
-    title: 'Sterile Injectables',
-    description: 'Cold-chain verified storage and handling — our most temperature-sensitive category.',
-    href: '/products?category=sterile-injectables',
-    cta: 'Explore sterile injectables',
+    eyebrow: 'Flagship range',
+    title: 'Antibiotics',
+    description: `${countIn('beta-lactams') + countIn('other-antibiotics')} products — meropenem, ceftazidime-avibactam, polymyxin B, colistimethate, vancomycin and more.`,
+    href: '/products?category=beta-lactams',
+    cta: 'Explore antibiotics',
   },
 }

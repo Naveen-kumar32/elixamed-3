@@ -172,11 +172,11 @@ function FacilitySplit() {
         <Reveal direction="left">
           <Eyebrow>Infrastructure</Eyebrow>
           <h2 className="mt-3 text-display-2 font-display font-semibold text-ink-700 text-balance">
-            One warehouse, <span className="text-[1.1em] text-brand-700">five product categories.</span>
+            One warehouse, <span className="text-[1.1em] text-brand-700">eleven product categories.</span>
           </h2>
           <p className="mt-4 max-w-[52ch] text-ink-500">
-            Our Chennai warehouse holds dedicated, temperature-monitored storage for oral solids, oral liquids,
-            topicals, sterile injectables and nutraceuticals — each handled to its own storage requirement.
+            Our Chennai warehouse holds dedicated, temperature-monitored storage for antibiotics, antifungals,
+            anticoagulants, critical-care and anaesthesia lines, steroids, nutrition and more — each held to its label storage condition.
           </p>
         </Reveal>
         <Reveal direction="right" delay={70}>
@@ -194,6 +194,37 @@ function FacilitySplit() {
             </figcaption>
           </figure>
         </Reveal>
+      </div>
+    </section>
+  )
+}
+
+// ---- Section 2: About us / vision / mission (from the product list) ----
+// Statutory numbers and the registered address live in the footer only.
+function CompanyDetails() {
+  return (
+    <section aria-label="Company details" className={['bg-brand-50 py-24 sm:py-32', BELOW_FOLD].join(' ')}>
+      <div className="mx-auto max-w-7xl px-6">
+        <Reveal>
+          <Eyebrow>About us</Eyebrow>
+          <h2 className="mt-3 text-display-2 font-display font-semibold text-ink-700 text-balance">{company.legalName}</h2>
+          <p className="mt-4 max-w-[60ch] text-body-lg text-ink-500">{company.about}</p>
+        </Reveal>
+
+        <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2">
+          {[
+            { icon: 'Globe', title: 'Our vision', body: company.vision },
+            { icon: 'HeartHandshake', title: 'Our mission', body: company.mission },
+          ].map((item, i) => (
+            <Reveal key={item.title} direction={i === 0 ? 'left' : 'right'}>
+              <Card variant="outline" className="h-full p-7">
+                <Icon name={item.icon} size={26} className="text-brand-600" />
+                <h3 className="mt-4 font-display text-xl font-semibold text-ink-700">{item.title}</h3>
+                <p className="mt-2 text-ink-500">{item.body}</p>
+              </Card>
+            </Reveal>
+          ))}
+        </div>
       </div>
     </section>
   )
@@ -224,6 +255,7 @@ export default function About() {
   return (
     <>
       <EditorialHero />
+      <CompanyDetails />
       <MissionQuote />
       <StoryTimeline />
       <ValuesGrid />

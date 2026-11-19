@@ -12,22 +12,36 @@
 
 export const company = {
   name: 'ElixaMed',
-  legalName: 'ElixaMed Pharma Distributors Pvt. Ltd.',
+  legalName: 'Elixamed Lifecare Private Limited',
   tagline: 'Wholesale pharmaceutical distribution, delivered with trust.',
   founded: 2010,
   hq: 'Chennai, India',
   eyebrow: 'EST. 2010 — CHENNAI',
 
+  // Registered address, phones, email and statutory numbers as printed on
+  // the company's product list (Nov 2026).
   address: {
-    line1: 'Thy Grace, Dr. Johnson, 110, 1st Avenue',
-    line2: 'Royal Metro City, Adayalampattu, Tamil Nadu 600095',
-    mapQuery: 'Adayalampattu, Tamil Nadu 600095',
+    line1: 'No 110, First Floor, Sneham Apartments, Metro Royal City',
+    line2: 'Poonamallee, Adayalampet, Chennai – 600095',
+    mapQuery: 'Metro Royal City, Adayalampet, Chennai 600095',
     mapHref: 'https://maps.app.goo.gl/fQx3RuxsKQcyU5766',
   },
-  phone: { display: '+91 44 4567 8900', href: '+914445678900' },
-  mobile: { display: '+91 98765 43210', href: '+919876543210' },
-  email: { display: 'hello@elixamed.com', href: 'hello@elixamed.com' },
-  qualityEmail: { display: 'quality@elixamed.com', href: 'quality@elixamed.com' },
+  phone: { display: '+91 86674 55565', href: '+918667455565' },
+  mobile: { display: '+91 86789 05565', href: '+918678905565' },
+  email: { display: 'orders@elixamed.com', href: 'orders@elixamed.com' },
+  // Only one official mailbox is published — documentation requests go there too.
+  qualityEmail: { display: 'orders@elixamed.com', href: 'orders@elixamed.com' },
+
+  statutory: [
+    { label: 'GST number', value: '33AAJCE7758B1ZN' },
+    { label: 'Drug licence – Form 20B', value: 'TN/TVR/20B/01618' },
+    { label: 'Drug licence – Form 21B', value: 'TN/TVR/21B/01618' },
+    { label: 'PAN', value: 'AAJCE7758B' },
+  ],
+  about:
+    'Elixamed Lifecare Private Limited is committed to providing high quality, safe and affordable medicines and healthcare products to improve health and well-being.',
+  vision: 'To be a leading and trusted healthcare partner in India.',
+  mission: 'To deliver quality medicines with excellence, care and integrity.',
   hours: [
     { days: 'Monday – Friday', time: '9:00 AM – 6:00 PM IST' },
     { days: 'Saturday', time: '9:00 AM – 1:00 PM IST' },
@@ -88,14 +102,14 @@ export const company = {
 
   stats: {
     home: [
-      { value: 48, suffix: '+', label: 'Products distributed' },
+      { value: 86, suffix: '', label: 'Products in our range' },
       { value: 12, suffix: '', label: 'Years in operation' },
       { value: 99.4, suffix: '%', label: 'Verified batch compliance', decimals: 1 },
       { value: 40, suffix: '+', label: 'Retail partners' },
     ],
     about: [
       { value: 220, suffix: '+', label: 'Team members' },
-      { value: 5, suffix: '', label: 'Product categories' },
+      { value: 11, suffix: '', label: 'Product categories' },
       { value: 15, suffix: '+', label: 'Cities served' },
     ],
     services: [
@@ -104,16 +118,6 @@ export const company = {
       { value: 72, suffix: 'hrs', label: 'Avg. quote turnaround' },
     ],
   },
-
-  // Category share of distribution volume — feeds the Services data-viz
-  // band (donut + bar chart), drawn only from this real, shared dataset.
-  categoryShare: [
-    { label: 'Oral Solids', value: 34, categorySlug: 'oral-solids' },
-    { label: 'Sterile Injectables', value: 24, categorySlug: 'sterile-injectables' },
-    { label: 'Oral Liquids', value: 18, categorySlug: 'oral-liquids' },
-    { label: 'Nutraceuticals', value: 16, categorySlug: 'nutraceuticals' },
-    { label: 'Topical', value: 8, categorySlug: 'topical' },
-  ],
 
   values: [
     {
@@ -143,7 +147,7 @@ export const company = {
     {
       icon: 'ShoppingCart',
       title: 'Sourcing & Procurement',
-      description: 'Verified bulk sourcing from certified manufacturers and super-stockists across all five categories.',
+      description: 'Verified bulk sourcing from certified manufacturers and super-stockists across all eleven categories.',
     },
     {
       icon: 'ClipboardCheck',

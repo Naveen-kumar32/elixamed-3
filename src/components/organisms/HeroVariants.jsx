@@ -60,8 +60,8 @@ export function HomeHero() {
             Pharmaceutical distribution, <span className="text-[1.1em] text-clinical-300">delivered with trust.</span>
           </h1>
           <p className="mt-6 max-w-[52ch] text-body-lg leading-[1.7] text-white/80">
-            Five product categories, sourced from certified manufacturers and supplied to 40+ retail partners across
-            Tamil Nadu — every batch verified before it ships.
+            86 hospital and critical-care products across eleven therapeutic categories, sourced from certified
+            manufacturers and supplied to 40+ partners across Tamil Nadu — every batch verified before it ships.
           </p>
           <div className="mt-9 flex flex-wrap gap-4">
             <Button to="/products" icon="ArrowRight" variant="onDark">
@@ -94,15 +94,15 @@ function SplitHero({ eyebrowIcon, eyebrowLabel, heading, description, images, ch
   return (
     <section
       aria-label={`${eyebrowLabel} introduction`}
-      className="split-hero-frame relative overflow-hidden pb-12 pt-16 sm:pb-16 sm:pt-20 lg:h-[34rem] lg:pb-0 lg:pt-0"
+      className="split-hero-frame relative overflow-hidden pb-12 pt-16 sm:pb-16 sm:pt-20 xl:h-[34rem] xl:pb-0 xl:pt-0"
     >
-      <div aria-hidden="true" className="split-hero-media hidden lg:block">
+      <div aria-hidden="true" className="split-hero-media hidden xl:block">
         <ImageCrossfade images={images} className="h-full w-full" imgClassName="object-cover object-center" />
       </div>
-      <div aria-hidden="true" className="split-hero-seam hidden lg:block" />
+      <div aria-hidden="true" className="split-hero-seam hidden xl:block" />
       <NoiseOverlay />
-      <div className="relative z-10 mx-auto flex max-w-7xl flex-col px-6 lg:h-full lg:justify-center">
-        <Reveal direction="left" className="relative z-10 py-4 lg:w-[54%] lg:py-0">
+      <div className="split-hero-content relative z-10 mx-auto flex max-w-7xl flex-col px-6 xl:h-full xl:justify-center">
+        <Reveal direction="left" className="relative z-10 py-4 xl:w-[54%] xl:py-0">
           <div className="flex items-center gap-2">
             <Icon name={eyebrowIcon} size={18} className="text-brand-600" />
             <span className="font-mono text-eyebrow font-semibold uppercase tracking-[0.14em] text-clinical-800">{eyebrowLabel}</span>
@@ -112,8 +112,8 @@ function SplitHero({ eyebrowIcon, eyebrowLabel, heading, description, images, ch
           {children}
         </Reveal>
 
-        <Reveal direction="right" delay={120} className="relative mt-8 lg:hidden">
-          <div className="relative aspect-[6/5] w-full overflow-hidden rounded-card ring-4 ring-white/25 shadow-lg">
+        <Reveal direction="right" delay={120} className="relative mt-8 xl:hidden">
+          <div className="relative aspect-[6/5] w-full overflow-hidden rounded-card ring-4 ring-white/25 shadow-lg md:aspect-[16/9]">
             <ImageCrossfade images={images} className="h-full w-full" />
             <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-900/45 via-transparent to-brand-500/10" />
           </div>
@@ -134,7 +134,7 @@ export function EditorialHero() {
           Fifteen years of pharmaceutical distribution, <span className="text-[1.12em] text-brand-700">built on trust.</span>
         </>
       }
-      description="ElixaMed began by supplying a single retailer in Chennai. Today, we source across five product categories from certified manufacturers and deliver to 40+ retail partners."
+      description="ElixaMed began by supplying a single retailer in Chennai. Today, we source 86 hospital and critical-care products across eleven therapeutic categories from certified manufacturers and deliver to 40+ retail partners."
       images={[
         { src: '/images/wholesale-warehouse-aisle.jpg', alt: 'Rows of stocked warehouse shelving' },
         { src: '/images/wholesale-team-clipboard.jpg', alt: 'Two colleagues reviewing stock in a warehouse aisle' },
@@ -152,7 +152,9 @@ export function CompactHero({ query, onQueryChange, onSubmit, products = [] }) {
   const inputRef = useRef(null)
 
   const trimmed = query.trim().toLowerCase()
-  const suggestions = trimmed ? products.filter((p) => p.name.toLowerCase().includes(trimmed)).slice(0, 6) : []
+  const suggestions = trimmed
+    ? products.filter((p) => [p.name, p.molecule, p.brand].some((f) => f?.toLowerCase().includes(trimmed))).slice(0, 6)
+    : []
 
   useEffect(() => {
     setActiveIndex(-1)
@@ -192,10 +194,10 @@ export function CompactHero({ query, onQueryChange, onSubmit, products = [] }) {
       eyebrowLabel="Catalogue"
       heading={
         <>
-          48 formulations, <span className="text-[1.12em] text-brand-700">ready to supply.</span>
+          {products.length} products, <span className="text-[1.12em] text-brand-700">ready to supply.</span>
         </>
       }
-      description="Search by product name, then filter by category below."
+      description="Search by brand, molecule or product name, then filter by category below."
       images={[
         { src: '/images/wholesale-forklift-pallets.jpg', alt: 'Forklift moving pallets in a warehouse racking aisle' },
         { src: '/images/wholesale-warehouse-aisle.jpg', alt: 'Rows of stocked warehouse shelving' },
@@ -227,7 +229,7 @@ export function CompactHero({ query, onQueryChange, onSubmit, products = [] }) {
               onFocus={() => setOpen(true)}
               onBlur={() => setTimeout(() => setOpen(false), 120)}
               onKeyDown={onKeyDown}
-              placeholder="Search products…"
+              placeholder="Search e.g. teicoplanin, Enoxaflo…"
               autoComplete="off"
               className="border-0 pl-11"
             />
@@ -253,7 +255,7 @@ export function CompactHero({ query, onQueryChange, onSubmit, products = [] }) {
                   ' ',
                 )}
               >
-                {p.name} <span className="text-ink-500/60">— {p.generic}</span>
+                {p.name} <span className="text-ink-500/60">— {p.molecule}</span>
               </li>
             ))}
           </ul>

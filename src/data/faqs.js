@@ -6,7 +6,7 @@ export const faqs = {
   general: [
     {
       q: 'What does ElixaMed distribute?',
-      a: 'Oral solids, oral liquids, topicals, sterile injectables and nutraceuticals — five categories, sourced from certified manufacturers and stocked in our Chennai warehouse.',
+      a: '86 hospital and critical-care products across eleven therapeutic categories — antibiotics, antifungals and antivirals, steroids, pain management, anticoagulants, GI, critical care, neuro, anaesthesia and nutrition — from Aristo, Troikaa, Glenmark, Eris and other manufacturers. The full price list, with MRP and offer prices, is on the Products page.',
     },
     {
       q: 'Is your business licensed?',
@@ -14,7 +14,7 @@ export const faqs = {
     },
     {
       q: 'Do you supply private-label retailers?',
-      a: 'Yes — we can source and supply private-label stock across all five categories, subject to manufacturer availability.',
+      a: 'Yes — we can source and supply private-label stock across all eleven categories, subject to manufacturer availability.',
     },
   ],
   products: [

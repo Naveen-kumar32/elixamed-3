@@ -15,6 +15,8 @@ const Products = lazy(() => import('./pages/Products'))
 const Services = lazy(() => import('./pages/Services'))
 const Quality = lazy(() => import('./pages/Quality'))
 const Contact = lazy(() => import('./pages/Contact'))
+const Terms = lazy(() => import('./pages/Terms'))
+const Privacy = lazy(() => import('./pages/Privacy'))
 
 /** Route-level Suspense fallback — a skeleton shell, not a blank screen. */
 function PageSkeleton() {
@@ -85,6 +87,8 @@ function App() {
               <Route path="/services" element={<Services />} />
               <Route path="/quality" element={<Quality />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/privacy" element={<Privacy />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

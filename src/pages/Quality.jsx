@@ -139,7 +139,7 @@ function TestingStandardsGrid() {
             Verified against <span className="text-[1.1em] text-brand-700">recognized pharmacopeia.</span>
           </h2>
         </Reveal>
-        <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-start lg:gap-8">
+        <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-8">
           <Reveal direction="left" className="lg:col-span-4">
             <img
               src="/images/quality-testing.jpg"
@@ -147,7 +147,7 @@ function TestingStandardsGrid() {
               loading="lazy"
               width={1400}
               height={1000}
-              className="aspect-[4/5] w-full rounded-card object-cover shadow-md"
+              className="aspect-[4/3] w-full rounded-card object-cover shadow-md sm:aspect-[16/9] lg:aspect-auto lg:h-full"
             />
           </Reveal>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-8">
